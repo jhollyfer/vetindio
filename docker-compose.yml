@@ -1,0 +1,18 @@
+name: vetindio-database
+
+services:
+  vetindio-database:
+    image: postgres:16-alpine
+    container_name: vetindio-database
+    env_file: .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USER}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - volume_vetindio_database:/var/lib/postgresql/data
+
+volumes:
+  volume_vetindio_database:
