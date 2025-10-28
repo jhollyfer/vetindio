@@ -15,7 +15,7 @@ datasource db {
 }
 
 enum UserRoleEnum {
-  MASTER //Fundador
+  MASTER
   COMPANY
   CLIENT
 }
@@ -25,9 +25,26 @@ model User {
   name      String
   email     String       @unique
   password  String
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
   role      UserRoleEnum @default(COMPANY)
 
   @@map("users")
+}
+
+enum CategoryStatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+model Category {
+  id          String             @id @default(uuid())
+  name        String
+  slug        String             @unique
+  description String?
+  status      CategoryStatusEnum @default(ACTIVE)
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  @@map("categories")
 }

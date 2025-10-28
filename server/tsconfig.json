@@ -11,7 +11,7 @@
       "@exceptions/*": ["./app/exceptions/*"],
       "@middlewares/*": ["./app/middlewares/*"],
       "@use-case/*": ["./app/use-case/*"],
-      "@validators/*": ["./app/schemas/*"]
+      "@validators/*": ["./app/validators/*"]
     },
     "rootDirs": ["./app"],
     "typeRoots": ["./types"],

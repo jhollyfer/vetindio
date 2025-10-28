@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
-import { AuthenticationSignUpSchema } from 'app/validators/authentication.validator';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import SignUpUseCase from '@use-case/authentication/sign-up.use-case';
+import { AuthenticationSignUpSchema } from '@validators/authentication.validator';
 
 @Controller({
   route: 'authentication',

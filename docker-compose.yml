@@ -4,7 +4,7 @@ services:
   vetindio-database:
     image: postgres:16-alpine
     container_name: vetindio-database
-    env_file: .env
+    env_file: ./server/.env
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}

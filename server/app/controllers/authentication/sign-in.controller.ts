@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
-import { AuthenticationSignInSchema } from 'app/validators/authentication.validator';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import type { JWTPayload } from '@core/entity.core';
 import { Env } from '@start/env';
 import SignInUseCase from '@use-case/authentication/sign-in.use-case';
+import { AuthenticationSignInSchema } from '@validators/authentication.validator';
 
 @Controller({
   route: 'authentication',
