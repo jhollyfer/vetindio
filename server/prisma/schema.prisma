@@ -16,8 +16,8 @@ datasource db {
 
 enum UserRoleEnum {
   MASTER
-  COMPANY
-  CLIENT
+  ADMINISTRATOR
+  CUSTOMER
 }
 
 model User {
@@ -27,7 +27,7 @@ model User {
   password  String
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
-  role      UserRoleEnum @default(COMPANY)
+  role      UserRoleEnum @default(CUSTOMER)
 
   @@map("users")
 }
@@ -47,4 +47,18 @@ model Category {
   updatedAt   DateTime           @updatedAt @map("updated_at")
 
   @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Int
+  stock       Int
+  sku         String   @unique
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("products")
 }

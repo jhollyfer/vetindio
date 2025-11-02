@@ -1,7 +1,7 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ["app/**/*.ts", "bin/**/*.ts", "config/**/*.ts", "start/**/*.ts"],
-  ignoreWatch: ["node_modules"],
-  outDir: "build",
+  entry: ['app/**/*.ts', 'bin/**/*.ts', 'config/**/*.ts', 'start/**/*.ts'],
+  ignoreWatch: ['node_modules'],
+  outDir: 'build',
 });
