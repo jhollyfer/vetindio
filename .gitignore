@@ -17,3 +17,8 @@
 **/.env
 
 **/generated/prisma
+
+# Turborepo
+.turbo
+**/out/
+**/.next/cache
