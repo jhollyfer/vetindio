@@ -1,11 +1,13 @@
+import { CategoryStatusEnum } from 'generated/prisma/client';
 import slugify from 'slugify';
 import z from 'zod';
 
 export const CategoryCreateBodySchema = z
   .object({
-    name: z.string().trim(),
+    name: z.string().trim().min(1, 'Nome é obrigatório'),
     description: z.string().trim().optional(),
     slug: z.string().trim().optional(),
+    status: z.nativeEnum(CategoryStatusEnum).default(CategoryStatusEnum.ACTIVE),
   })
   .transform(function (value, context) {
     return {

@@ -17,45 +17,60 @@ type Payload = z.infer<typeof CategoryUpdateBodySchema> &
 @Service()
 export default class CategoryUpdateUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const exist = await prisma.category.findUnique({
-      where: {
-        id: payload.id,
-      },
-    });
-
-    if (!exist)
-      return left(
-        ApplicationException.NotFound(
-          'Esta categoria não foi encontrada.',
-          'CATEGORY_NOT_FOUND',
-        ),
-      );
-
-    if (exist.slug !== payload.slug) {
-      const exist = await prisma.category.findUnique({
+    try {
+      const exist = await prisma.category.findFirst({
         where: {
-          slug: payload.slug,
+          id: payload.id,
+          trashed: false,
         },
       });
 
-      if (exist)
+      if (!exist)
         return left(
-          ApplicationException.Conflict(
-            'Esta categoria já está em uso.',
-            'CATEGORY_IN_USE',
+          ApplicationException.NotFound(
+            'Esta categoria não foi encontrada.',
+            'CATEGORY_NOT_FOUND',
           ),
         );
+
+      if (exist.slug !== payload.slug) {
+        const slugExists = await prisma.category.findFirst({
+          where: {
+            slug: payload.slug,
+            trashed: false,
+          },
+        });
+
+        if (slugExists)
+          return left(
+            ApplicationException.Conflict(
+              'Esta categoria já está em uso.',
+              'CATEGORY_IN_USE',
+            ),
+          );
+      }
+
+      const updated = await prisma.category.update({
+        where: {
+          id: payload.id,
+        },
+        data: {
+          name: payload.name,
+          slug: payload.slug,
+          description: payload.description,
+          status: payload.status,
+        },
+      });
+
+      return right(updated);
+    } catch (error) {
+      console.error(error);
+      return left(
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'UPDATE_CATEGORY_ERROR',
+        ),
+      );
     }
-
-    const updated = await prisma.category.update({
-      where: {
-        id: payload.id,
-      },
-      data: {
-        ...payload,
-      },
-    });
-
-    return right(updated);
   }
 }

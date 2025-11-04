@@ -1,23 +1,23 @@
 import { Service } from 'fastify-decorators';
-import { Category, Prisma } from 'generated/prisma/client';
+import { Product, Prisma } from 'generated/prisma/client';
 import z from 'zod';
 
 import { prisma } from '@config/database.config';
 import { Either, left, right } from '@core/either.core';
 import { Paginated } from '@core/entity.core';
 import ApplicationException from '@exceptions/application.exception';
-import { CategoryListPaginatedSchema } from '@validators/category.validator';
+import { ProductListPaginatedSchema } from '@validators/product.validator';
 
-type Response = Either<ApplicationException, Paginated<Category>>;
-type Payload = z.infer<typeof CategoryListPaginatedSchema>;
+type Response = Either<ApplicationException, Paginated<Product>>;
+type Payload = z.infer<typeof ProductListPaginatedSchema>;
 
 @Service()
-export default class CategoryListPaginatedUseCase {
+export default class ProductListPaginatedUseCase {
   async execute(payload: Payload): Promise<Response> {
     try {
       const skip = (payload.page - 1) * payload.perPage;
 
-      const where: Prisma.CategoryWhereInput = {
+      const where: Prisma.ProductWhereInput = {
         trashed: false,
       };
 
@@ -25,17 +25,18 @@ export default class CategoryListPaginatedUseCase {
         where.OR = [
           { name: { contains: payload.search, mode: 'insensitive' } },
           { description: { contains: payload.search, mode: 'insensitive' } },
+          { sku: { contains: payload.search, mode: 'insensitive' } },
         ];
       }
 
-      const [categories, total] = await Promise.all([
-        prisma.category.findMany({
+      const [products, total] = await Promise.all([
+        prisma.product.findMany({
           where,
           skip,
           take: payload.perPage,
           orderBy: { name: 'asc' },
         }),
-        prisma.category.count({ where }),
+        prisma.product.count({ where }),
       ]);
 
       const lastPage = Math.ceil(total / payload.perPage);
@@ -50,14 +51,14 @@ export default class CategoryListPaginatedUseCase {
 
       return right({
         meta,
-        data: categories,
+        data: products,
       });
     } catch (error) {
       console.error(error);
       return left(
         ApplicationException.InternalServerError(
           'Internal server error',
-          'LIST_CATEGORY_PAGINATED_ERROR',
+          'LIST_PRODUCT_PAGINATED_ERROR',
         ),
       );
     }

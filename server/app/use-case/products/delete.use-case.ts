@@ -12,20 +12,41 @@ type Payload = z.infer<typeof ProductDeleteParamSchema>;
 @Service()
 export default class ProductDeleteUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const product = await prisma.product.findUnique({
-      where: {
-        id: payload.id,
-      },
-    });
+    try {
+      const product = await prisma.product.findFirst({
+        where: {
+          id: payload.id,
+          trashed: false,
+        },
+      });
 
-    if (!product)
+      if (!product)
+        return left(
+          ApplicationException.NotFound(
+            'Este produto não foi encontrado.',
+            'PRODUCT_NOT_FOUND',
+          ),
+        );
+
+      await prisma.product.update({
+        where: {
+          id: payload.id,
+        },
+        data: {
+          trashed: true,
+          trashedAt: new Date(),
+        },
+      });
+
+      return right(null);
+    } catch (error) {
+      console.error(error);
       return left(
-        ApplicationException.NotFound(
-          'Este produto não foi encontrado.',
-          'PRODUCT_NOT_FOUND',
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'DELETE_PRODUCT_ERROR',
         ),
       );
-
-    return right(null);
+    }
   }
 }

@@ -12,28 +12,41 @@ type Payload = z.infer<typeof CategoryDeleteParamSchema>;
 @Service()
 export default class CategoryDeleteUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: payload.id,
-      },
-    });
+    try {
+      const category = await prisma.category.findFirst({
+        where: {
+          id: payload.id,
+          trashed: false,
+        },
+      });
 
-    if (!category)
+      if (!category)
+        return left(
+          ApplicationException.NotFound(
+            'Esta categoria não foi encontrada.',
+            'CATEGORY_NOT_FOUND',
+          ),
+        );
+
+      await prisma.category.update({
+        where: {
+          id: payload.id,
+        },
+        data: {
+          trashed: true,
+          trashedAt: new Date(),
+        },
+      });
+
+      return right(null);
+    } catch (error) {
+      console.error(error);
       return left(
-        ApplicationException.NotFound(
-          'Esta categoria não foi encontrada.',
-          'CATEGORY_NOT_FOUND',
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'DELETE_CATEGORY_ERROR',
         ),
       );
-
-    // TODO: VERIFICAR SE REALMENTE É NECESSÁRIO EXCLUIR A CATEGORIA
-
-    // await prisma.category.delete({
-    //   where: {
-    //     id: payload.id,
-    //   },
-    // });
-
-    return right(null);
+    }
   }
 }

@@ -13,26 +13,40 @@ type Payload = z.infer<typeof CategoryCreateBodySchema>;
 @Service()
 export default class CategoryCreateUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const exist = await prisma.category.findUnique({
-      where: {
-        slug: payload.slug,
-      },
-    });
+    try {
+      const exist = await prisma.category.findFirst({
+        where: {
+          slug: payload.slug,
+          trashed: false,
+        },
+      });
 
-    if (exist)
+      if (exist)
+        return left(
+          ApplicationException.Conflict(
+            'Esta categoria já está em uso.',
+            'CATEGORY_IN_USE',
+          ),
+        );
+
+      const created = await prisma.category.create({
+        data: {
+          name: payload.name,
+          slug: payload.slug,
+          description: payload.description,
+          status: payload.status,
+        },
+      });
+
+      return right(created);
+    } catch (error) {
+      console.error(error);
       return left(
-        ApplicationException.Conflict(
-          'Esta categoria já está em uso.',
-          'CATEGORY_IN_USE',
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'CREATE_CATEGORY_ERROR',
         ),
       );
-
-    const created = await prisma.category.create({
-      data: {
-        ...payload,
-      },
-    });
-
-    return right(created);
+    }
   }
 }

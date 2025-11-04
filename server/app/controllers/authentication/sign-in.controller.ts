@@ -10,13 +10,84 @@ import { AuthenticationSignInSchema } from '@validators/authentication.validator
 @Controller({
   route: 'authentication',
 })
-export default class SignInController {
+export default class AuthenticationSignInController {
   constructor(
     private readonly useCase: SignInUseCase = getInstanceByToken(SignInUseCase),
   ) {}
 
   @POST({
     url: '/sign-in',
+    options: {
+      schema: {
+        tags: ['Authentication'],
+        summary: 'Login de usuário',
+        description:
+          'Autentica um usuário com email e senha, retornando tokens JWT via cookies',
+        body: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: {
+              type: 'string',
+              format: 'email',
+              description: 'Endereço de email do usuário',
+            },
+            password: {
+              type: 'string',
+              description: 'Senha do usuário',
+            },
+          },
+        },
+        response: {
+          200: {
+            description:
+              'Login realizado com sucesso - Tokens JWT definidos via cookies',
+            type: 'object',
+            properties: {
+              message: {
+                type: 'string',
+                enum: ['Login realizado com sucesso'],
+              },
+            },
+            headers: {
+              'Set-Cookie': {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Cookies contendo accessToken (1 dia) e refreshToken (7 dias)',
+              },
+            },
+          },
+          400: {
+            description: 'Requisição inválida - Erro de validação',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              code: { type: 'number', enum: [400] },
+              cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+            },
+          },
+          401: {
+            description: 'Não autorizado - Credenciais inválidas',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              code: { type: 'number', enum: [401] },
+              cause: { type: 'string', enum: ['INVALID_CREDENTIALS'] },
+            },
+          },
+          500: {
+            description: 'Erro interno do servidor',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              code: { type: 'number', enum: [500] },
+              cause: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = AuthenticationSignInSchema.parse(request.body);

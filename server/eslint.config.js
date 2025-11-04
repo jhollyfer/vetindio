@@ -13,6 +13,8 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
@@ -69,6 +71,12 @@ export default [
     },
   },
   {
-    ignores: ['node_modules', 'build', 'public'],
+    ignores: [
+      'node_modules',
+      'build',
+      'public',
+      'eslint.config.js',
+      '*.config.js',
+    ],
   },
 ];

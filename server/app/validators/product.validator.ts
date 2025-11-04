@@ -8,6 +8,7 @@ export const ProductCreateBodySchema = z
     slug: z.string().trim().optional(),
     price: z.number().positive(),
     stock: z.number().positive(),
+    sku: z.string().trim(),
   })
   .transform(function (value, context) {
     return {
@@ -19,6 +20,12 @@ export const ProductCreateBodySchema = z
       }),
     };
   });
+
+export const ProductListPaginatedSchema = z.object({
+  page: z.coerce.number().positive().default(1),
+  perPage: z.coerce.number().positive().max(100).default(50),
+  search: z.string().trim().optional(),
+});
 
 export const ProductShowParamSchema = z.object({
   id: z.uuid().trim(),

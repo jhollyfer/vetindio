@@ -13,20 +13,31 @@ type Payload = z.infer<typeof CategoryShowParamSchema>;
 @Service()
 export default class CategoryShowUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const category = await prisma.category.findUnique({
-      where: {
-        id: payload.id,
-      },
-    });
+    try {
+      const category = await prisma.category.findFirst({
+        where: {
+          id: payload.id,
+          trashed: false,
+        },
+      });
 
-    if (!category)
+      if (!category)
+        return left(
+          ApplicationException.NotFound(
+            'Esta categoria não foi encontrada.',
+            'CATEGORY_NOT_FOUND',
+          ),
+        );
+
+      return right(category);
+    } catch (error) {
+      console.error(error);
       return left(
-        ApplicationException.NotFound(
-          'Esta categoria não foi encontrada.',
-          'CATEGORY_NOT_FOUND',
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'SHOW_CATEGORY_ERROR',
         ),
       );
-
-    return right(category);
+    }
   }
 }

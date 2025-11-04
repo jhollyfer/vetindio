@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './../routes/__root'
 import { Route as PrivateLayoutRouteImport } from './../routes/_private/layout'
 import { Route as IndexRouteImport } from './../routes/index'
-import { Route as PrivateProductsRouteImport } from './../routes/_private/products'
 import { Route as PrivateDashboardRouteImport } from './../routes/_private/dashboard'
 import { Route as PrivateAdministratorsRouteImport } from './../routes/_private/administrators'
+import { Route as PrivateProductsIndexRouteImport } from './../routes/_private/products/index'
 import { Route as PrivateCategoriesIndexRouteImport } from './../routes/_private/categories/index'
 
 const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
@@ -25,11 +25,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivateProductsRoute = PrivateProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => PrivateLayoutRoute,
-} as any)
 const PrivateDashboardRoute = PrivateDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -38,6 +33,11 @@ const PrivateDashboardRoute = PrivateDashboardRouteImport.update({
 const PrivateAdministratorsRoute = PrivateAdministratorsRouteImport.update({
   id: '/administrators',
   path: '/administrators',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any)
+const PrivateProductsIndexRoute = PrivateProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any)
 const PrivateCategoriesIndexRoute = PrivateCategoriesIndexRouteImport.update({
@@ -50,15 +50,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/administrators': typeof PrivateAdministratorsRoute
   '/dashboard': typeof PrivateDashboardRoute
-  '/products': typeof PrivateProductsRoute
   '/categories': typeof PrivateCategoriesIndexRoute
+  '/products': typeof PrivateProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/administrators': typeof PrivateAdministratorsRoute
   '/dashboard': typeof PrivateDashboardRoute
-  '/products': typeof PrivateProductsRoute
   '/categories': typeof PrivateCategoriesIndexRoute
+  '/products': typeof PrivateProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -66,8 +66,8 @@ export interface FileRoutesById {
   '/_private': typeof PrivateLayoutRouteWithChildren
   '/_private/administrators': typeof PrivateAdministratorsRoute
   '/_private/dashboard': typeof PrivateDashboardRoute
-  '/_private/products': typeof PrivateProductsRoute
   '/_private/categories/': typeof PrivateCategoriesIndexRoute
+  '/_private/products/': typeof PrivateProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -75,18 +75,18 @@ export interface FileRouteTypes {
     | '/'
     | '/administrators'
     | '/dashboard'
-    | '/products'
     | '/categories'
+    | '/products'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/administrators' | '/dashboard' | '/products' | '/categories'
+  to: '/' | '/administrators' | '/dashboard' | '/categories' | '/products'
   id:
     | '__root__'
     | '/'
     | '/_private'
     | '/_private/administrators'
     | '/_private/dashboard'
-    | '/_private/products'
     | '/_private/categories/'
+    | '/_private/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -110,13 +110,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_private/products': {
-      id: '/_private/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof PrivateProductsRouteImport
-      parentRoute: typeof PrivateLayoutRoute
-    }
     '/_private/dashboard': {
       id: '/_private/dashboard'
       path: '/dashboard'
@@ -129,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/administrators'
       fullPath: '/administrators'
       preLoaderRoute: typeof PrivateAdministratorsRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
+    '/_private/products/': {
+      id: '/_private/products/'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof PrivateProductsIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/categories/': {
@@ -144,15 +144,15 @@ declare module '@tanstack/react-router' {
 interface PrivateLayoutRouteChildren {
   PrivateAdministratorsRoute: typeof PrivateAdministratorsRoute
   PrivateDashboardRoute: typeof PrivateDashboardRoute
-  PrivateProductsRoute: typeof PrivateProductsRoute
   PrivateCategoriesIndexRoute: typeof PrivateCategoriesIndexRoute
+  PrivateProductsIndexRoute: typeof PrivateProductsIndexRoute
 }
 
 const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateAdministratorsRoute: PrivateAdministratorsRoute,
   PrivateDashboardRoute: PrivateDashboardRoute,
-  PrivateProductsRoute: PrivateProductsRoute,
   PrivateCategoriesIndexRoute: PrivateCategoriesIndexRoute,
+  PrivateProductsIndexRoute: PrivateProductsIndexRoute,
 }
 
 const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(

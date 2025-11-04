@@ -28,6 +28,8 @@ model User {
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
   role      UserRoleEnum @default(CUSTOMER)
+  trashed   Boolean      @default(false)
+  trashedAt DateTime?    @map("trashed_at")
 
   @@map("users")
 }
@@ -45,20 +47,24 @@ model Category {
   status      CategoryStatusEnum @default(ACTIVE)
   createdAt   DateTime           @default(now()) @map("created_at")
   updatedAt   DateTime           @updatedAt @map("updated_at")
+  trashed     Boolean            @default(false)
+  trashedAt   DateTime?          @map("trashed_at")
 
   @@map("categories")
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
-  slug        String   @unique
+  slug        String    @unique
   description String?
   price       Int
   stock       Int
-  sku         String   @unique
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  sku         String    @unique
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  trashed     Boolean   @default(false)
+  trashedAt   DateTime? @map("trashed_at")
 
   @@map("products")
 }

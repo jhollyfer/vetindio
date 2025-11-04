@@ -30,6 +30,6 @@
     "useDefineForClassFields": false,
     "downlevelIteration": false
   },
-  "include": ["app/**/*.ts", "bin/**/*.ts", "config/**/*.ts", "start/**/*.ts"],
+  "include": ["app/**/*.ts", "bin/**/*.ts", "config/**/*.ts", "start/**/*.ts", "generated/**/*.ts", "*.ts"],
   "exclude": ["node_modules", "build"]
 }

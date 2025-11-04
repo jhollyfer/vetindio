@@ -2,19 +2,19 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
-import CategoryUpdateUseCase from '@use-case/categories/update.use-case';
+import ProductUpdateUseCase from '@use-case/products/update.use-case';
 import {
-  CategoryUpdateBodySchema,
-  CategoryUpdateParamSchema,
-} from '@validators/category.validator';
+  ProductUpdateBodySchema,
+  ProductUpdateParamSchema,
+} from '@validators/product.validator';
 
 @Controller({
-  route: 'categories',
+  route: 'products',
 })
-export default class CategoryUpdateController {
+export default class ProductUpdateController {
   constructor(
-    private readonly useCase: CategoryUpdateUseCase = getInstanceByToken(
-      CategoryUpdateUseCase,
+    private readonly useCase: ProductUpdateUseCase = getInstanceByToken(
+      ProductUpdateUseCase,
     ),
   ) {}
 
@@ -22,9 +22,9 @@ export default class CategoryUpdateController {
     url: '/:id',
     options: {
       schema: {
-        tags: ['Categories'],
-        summary: 'Atualizar categoria',
-        description: 'Atualiza uma categoria existente pelo seu ID',
+        tags: ['Products'],
+        summary: 'Atualizar produto',
+        description: 'Atualiza um produto existente pelo seu ID',
         params: {
           type: 'object',
           required: ['id'],
@@ -32,45 +32,57 @@ export default class CategoryUpdateController {
             id: {
               type: 'string',
               format: 'uuid',
-              description: 'ID único da categoria',
+              description: 'ID único do produto',
             },
           },
         },
         body: {
           type: 'object',
-          required: ['name', 'status'],
+          required: ['name', 'price', 'stock', 'sku'],
           properties: {
             name: {
               type: 'string',
               minLength: 1,
-              description: 'Nome da categoria (obrigatório)',
+              description: 'Nome do produto (obrigatório)',
             },
             description: {
               type: 'string',
-              description: 'Descrição da categoria (opcional)',
+              description: 'Descrição do produto (opcional)',
             },
             slug: {
               type: 'string',
               description:
-                'Slug da categoria (gerado automaticamente se não fornecido)',
+                'Slug do produto (gerado automaticamente se não fornecido)',
             },
-            status: {
+            price: {
+              type: 'number',
+              minimum: 0.01,
+              description: 'Preço do produto (obrigatório)',
+            },
+            stock: {
+              type: 'number',
+              minimum: 0,
+              description: 'Quantidade em estoque (obrigatório)',
+            },
+            sku: {
               type: 'string',
-              enum: ['ACTIVE', 'INACTIVE'],
-              description: 'Status da categoria (obrigatório)',
+              minLength: 1,
+              description: 'SKU único do produto (obrigatório)',
             },
           },
         },
         response: {
           200: {
-            description: 'Categoria atualizada com sucesso',
+            description: 'Produto atualizado com sucesso',
             type: 'object',
             properties: {
               id: { type: 'string', format: 'uuid' },
               name: { type: 'string' },
               description: { type: 'string', nullable: true },
               slug: { type: 'string' },
-              status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+              price: { type: 'number' },
+              stock: { type: 'number' },
+              sku: { type: 'string' },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
               trashed: { type: 'boolean' },
@@ -87,21 +99,21 @@ export default class CategoryUpdateController {
             },
           },
           404: {
-            description: 'Categoria não encontrada',
+            description: 'Produto não encontrado',
             type: 'object',
             properties: {
               message: { type: 'string' },
               code: { type: 'number', enum: [404] },
-              cause: { type: 'string', enum: ['CATEGORY_NOT_FOUND'] },
+              cause: { type: 'string', enum: ['PRODUCT_NOT_FOUND'] },
             },
           },
           409: {
-            description: 'Conflito - Slug da categoria já existe',
+            description: 'Conflito - SKU do produto já existe',
             type: 'object',
             properties: {
               message: { type: 'string' },
               code: { type: 'number', enum: [409] },
-              cause: { type: 'string', enum: ['CATEGORY_IN_USE'] },
+              cause: { type: 'string', enum: ['PRODUCT_ALREADY_EXISTS'] },
             },
           },
           500: {
@@ -118,8 +130,8 @@ export default class CategoryUpdateController {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = CategoryUpdateParamSchema.parse(request.params);
-    const payload = CategoryUpdateBodySchema.parse(request.body);
+    const params = ProductUpdateParamSchema.parse(request.params);
+    const payload = ProductUpdateBodySchema.parse(request.body);
     const result = await this.useCase.execute({ ...params, ...payload });
 
     if (result.isLeft()) {

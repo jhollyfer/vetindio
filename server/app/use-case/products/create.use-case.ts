@@ -13,26 +13,37 @@ type Payload = z.infer<typeof ProductCreateBodySchema>;
 @Service()
 export default class ProductCreateUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const exist = await prisma.product.findUnique({
-      where: {
-        slug: payload.slug,
-      },
-    });
+    try {
+      const exist = await prisma.product.findFirst({
+        where: {
+          slug: payload.slug,
+          trashed: false,
+        },
+      });
 
-    if (exist)
+      if (exist)
+        return left(
+          ApplicationException.Conflict(
+            'Este produto já existe.',
+            'PRODUCT_ALREADY_EXISTS',
+          ),
+        );
+
+      const created = await prisma.product.create({
+        data: {
+          ...payload,
+        },
+      });
+
+      return right(created);
+    } catch (error) {
+      console.error(error);
       return left(
-        ApplicationException.Conflict(
-          'Este produto já existe.',
-          'PRODUCT_ALREADY_EXISTS',
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'CREATE_PRODUCT_ERROR',
         ),
       );
-
-    const created = await prisma.product.create({
-      data: {
-        ...payload,
-      },
-    });
-
-    return right(created);
+    }
   }
 }

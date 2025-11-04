@@ -2,16 +2,16 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
-import CategoryShowUseCase from '@use-case/categories/show.use-case';
-import { CategoryShowParamSchema } from '@validators/category.validator';
+import ProductShowUseCase from '@use-case/products/show.use-case';
+import { ProductShowParamSchema } from '@validators/product.validator';
 
 @Controller({
-  route: 'categories',
+  route: 'products',
 })
-export default class CategoryShowController {
+export default class ProductShowController {
   constructor(
-    private readonly useCase: CategoryShowUseCase = getInstanceByToken(
-      CategoryShowUseCase,
+    private readonly useCase: ProductShowUseCase = getInstanceByToken(
+      ProductShowUseCase,
     ),
   ) {}
 
@@ -19,9 +19,9 @@ export default class CategoryShowController {
     url: '/:id',
     options: {
       schema: {
-        tags: ['Categories'],
-        summary: 'Buscar categoria por ID',
-        description: 'Retorna uma categoria específica pelo seu ID',
+        tags: ['Products'],
+        summary: 'Buscar produto por ID',
+        description: 'Retorna um produto específico pelo seu ID',
         params: {
           type: 'object',
           required: ['id'],
@@ -29,20 +29,22 @@ export default class CategoryShowController {
             id: {
               type: 'string',
               format: 'uuid',
-              description: 'ID único da categoria',
+              description: 'ID único do produto',
             },
           },
         },
         response: {
           200: {
-            description: 'Categoria encontrada com sucesso',
+            description: 'Produto encontrado com sucesso',
             type: 'object',
             properties: {
               id: { type: 'string', format: 'uuid' },
               name: { type: 'string' },
               description: { type: 'string', nullable: true },
               slug: { type: 'string' },
-              status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
+              price: { type: 'number' },
+              stock: { type: 'number' },
+              sku: { type: 'string' },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
               trashed: { type: 'boolean' },
@@ -59,12 +61,12 @@ export default class CategoryShowController {
             },
           },
           404: {
-            description: 'Categoria não encontrada',
+            description: 'Produto não encontrado',
             type: 'object',
             properties: {
               message: { type: 'string' },
               code: { type: 'number', enum: [404] },
-              cause: { type: 'string', enum: ['CATEGORY_NOT_FOUND'] },
+              cause: { type: 'string', enum: ['PRODUCT_NOT_FOUND'] },
             },
           },
           500: {
@@ -81,7 +83,7 @@ export default class CategoryShowController {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const payload = CategoryShowParamSchema.parse(request.params);
+    const payload = ProductShowParamSchema.parse(request.params);
     const result = await this.useCase.execute(payload);
 
     if (result.isLeft()) {

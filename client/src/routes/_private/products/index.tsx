@@ -3,11 +3,11 @@ import { createFileRoute, useSearch } from '@tanstack/react-router';
 import { CircleXIcon } from 'lucide-react';
 import type React from 'react';
 
-import { SheetCategoryCreate } from './-components/sheet-category-create';
+import { SheetProductCreate } from './-components/sheet-product-create';
 import {
-  TableCategoryListPaginated,
-  TableCategoryListSkeleton,
-} from './-components/table-category-list-paginated';
+  TableProductListPaginated,
+  TableProductListSkeleton,
+} from './-components/table-product-list-paginated';
 
 import { Pagination } from '@/components/custom/pagination';
 import {
@@ -19,53 +19,53 @@ import {
 } from '@/components/ui/empty';
 import { API } from '@/lib/api';
 import { QUERY_KEY } from '@/lib/client-query';
-import type { Category, Paginated } from '@/lib/entities';
+import type { Paginated, Product } from '@/lib/entities';
 import { MetaDefault } from '@/lib/utils';
 
-export const Route = createFileRoute('/_private/categories/')({
+export const Route = createFileRoute('/_private/products/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
   const search = useSearch({
-    from: '/_private/categories/',
+    from: '/_private/products/',
   });
 
-  const categoryListPaginated = useQuery({
-    queryKey: [QUERY_KEY.CATEGORY.LIST_PAGINATED, search],
+  const productListPaginated = useQuery({
+    queryKey: [QUERY_KEY.PRODUCT.LIST_PAGINATED, search],
     queryFn: async function () {
-      const route = '/categories/paginated';
-      const response = await API.get<Paginated<Category>>(route);
+      const route = '/products/paginated';
+      const response = await API.get<Paginated<Product>>(route);
       return response.data;
     },
   });
 
-  const headers = ['Nome', 'Slug', 'Descrição', 'Status'] as const;
+  const headers = ['Nome', 'SKU', 'Preço', 'Estoque', 'Descrição'] as const;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
-        <h1 className="text-2xl font-medium ">Categorias</h1>
-        <SheetCategoryCreate />
+        <h1 className="text-2xl font-medium ">Produtos</h1>
+        <SheetProductCreate />
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {categoryListPaginated.status === 'pending' && (
-          <TableCategoryListSkeleton headers={headers} />
+        {productListPaginated.status === 'pending' && (
+          <TableProductListSkeleton headers={headers} />
         )}
-        {categoryListPaginated.status === 'success' && (
-          <TableCategoryListPaginated
+        {productListPaginated.status === 'success' && (
+          <TableProductListPaginated
             headers={headers}
-            data={categoryListPaginated.data.data}
+            data={productListPaginated.data.data}
           />
         )}
-        {categoryListPaginated.status === 'error' && (
+        {productListPaginated.status === 'error' && (
           <Empty>
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <CircleXIcon className="size-6" />
               </EmptyMedia>
-              <EmptyTitle>Erro ao carregar categorias</EmptyTitle>
+              <EmptyTitle>Erro ao carregar produtos</EmptyTitle>
               <EmptyDescription>
                 Houve um problema ao carregar os dados. Tente recarregar a
                 página.
@@ -76,7 +76,7 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={categoryListPaginated?.data?.meta ?? MetaDefault} />
+        <Pagination meta={productListPaginated?.data?.meta ?? MetaDefault} />
       </div>
     </div>
   );

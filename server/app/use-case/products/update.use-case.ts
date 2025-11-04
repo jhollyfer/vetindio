@@ -17,45 +17,62 @@ type Payload = z.infer<typeof ProductUpdateBodySchema> &
 @Service()
 export default class ProductUpdateUseCase {
   async execute(payload: Payload): Promise<Response> {
-    const exist = await prisma.product.findUnique({
-      where: {
-        id: payload.id,
-      },
-    });
-
-    if (!exist)
-      return left(
-        ApplicationException.NotFound(
-          'Esta categoria não foi encontrada.',
-          'product_NOT_FOUND',
-        ),
-      );
-
-    if (exist.slug !== payload.slug) {
-      const exist = await prisma.product.findUnique({
+    try {
+      const exist = await prisma.product.findFirst({
         where: {
-          slug: payload.slug,
+          id: payload.id,
+          trashed: false,
         },
       });
 
-      if (exist)
+      if (!exist)
         return left(
-          ApplicationException.Conflict(
-            'Este product já existe',
-            'PRODUCT_ALREADY_EXISTS',
+          ApplicationException.NotFound(
+            'Este produto não foi encontrado.',
+            'PRODUCT_NOT_FOUND',
           ),
         );
+
+      if (exist.slug !== payload.slug) {
+        const slugExists = await prisma.product.findFirst({
+          where: {
+            slug: payload.slug,
+            trashed: false,
+          },
+        });
+
+        if (slugExists)
+          return left(
+            ApplicationException.Conflict(
+              'Este produto já existe',
+              'PRODUCT_ALREADY_EXISTS',
+            ),
+          );
+      }
+
+      const updated = await prisma.product.update({
+        where: {
+          id: payload.id,
+        },
+        data: {
+          name: payload.name,
+          slug: payload.slug,
+          description: payload.description,
+          price: payload.price,
+          stock: payload.stock,
+          sku: payload.sku,
+        },
+      });
+
+      return right(updated);
+    } catch (error) {
+      console.error(error);
+      return left(
+        ApplicationException.InternalServerError(
+          'Erro interno do servidor',
+          'UPDATE_PRODUCT_ERROR',
+        ),
+      );
     }
-
-    const updated = await prisma.product.update({
-      where: {
-        id: payload.id,
-      },
-      data: {
-        ...payload,
-      },
-    });
-
-    return right(updated);
   }
 }

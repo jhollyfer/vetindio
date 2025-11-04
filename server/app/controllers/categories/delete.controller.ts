@@ -17,6 +17,64 @@ export default class CategoryDeleteController {
 
   @DELETE({
     url: '/:id',
+    options: {
+      schema: {
+        tags: ['Categories'],
+        summary: 'Deletar categoria (soft delete)',
+        description:
+          'Marca uma categoria como removida (soft delete) pelo seu ID',
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'ID único da categoria',
+            },
+          },
+        },
+        response: {
+          200: {
+            description: 'Categoria removida com sucesso (soft delete)',
+            type: 'object',
+            properties: {
+              message: {
+                type: 'string',
+                enum: ['Categoria deletada com sucesso'],
+              },
+            },
+          },
+          400: {
+            description: 'Requisição inválida - ID inválido',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              code: { type: 'number', enum: [400] },
+              cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+            },
+          },
+          404: {
+            description: 'Categoria não encontrada',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              code: { type: 'number', enum: [404] },
+              cause: { type: 'string', enum: ['CATEGORY_NOT_FOUND'] },
+            },
+          },
+          500: {
+            description: 'Erro interno do servidor',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+              code: { type: 'number', enum: [500] },
+              cause: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = CategoryDeleteParamSchema.parse(request.params);
@@ -32,6 +90,8 @@ export default class CategoryDeleteController {
       });
     }
 
-    return response.status(200).send();
+    return response.status(200).send({
+      message: 'Categoria deletada com sucesso',
+    });
   }
 }

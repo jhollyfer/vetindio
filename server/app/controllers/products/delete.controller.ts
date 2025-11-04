@@ -1,27 +1,28 @@
 /* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
+import { Controller, DELETE, getInstanceByToken } from 'fastify-decorators';
 
-import CategoryShowUseCase from '@use-case/categories/show.use-case';
-import { CategoryShowParamSchema } from '@validators/category.validator';
+import ProductDeleteUseCase from '@use-case/products/delete.use-case';
+import { ProductDeleteParamSchema } from '@validators/product.validator';
 
 @Controller({
-  route: 'categories',
+  route: 'products',
 })
-export default class CategoryShowController {
+export default class ProductDeleteController {
   constructor(
-    private readonly useCase: CategoryShowUseCase = getInstanceByToken(
-      CategoryShowUseCase,
+    private readonly useCase: ProductDeleteUseCase = getInstanceByToken(
+      ProductDeleteUseCase,
     ),
   ) {}
 
-  @GET({
+  @DELETE({
     url: '/:id',
     options: {
       schema: {
-        tags: ['Categories'],
-        summary: 'Buscar categoria por ID',
-        description: 'Retorna uma categoria específica pelo seu ID',
+        tags: ['Products'],
+        summary: 'Deletar produto (soft delete)',
+        description:
+          'Marca um produto como removido (soft delete) pelo seu ID',
         params: {
           type: 'object',
           required: ['id'],
@@ -29,24 +30,19 @@ export default class CategoryShowController {
             id: {
               type: 'string',
               format: 'uuid',
-              description: 'ID único da categoria',
+              description: 'ID único do produto',
             },
           },
         },
         response: {
           200: {
-            description: 'Categoria encontrada com sucesso',
+            description: 'Produto removido com sucesso (soft delete)',
             type: 'object',
             properties: {
-              id: { type: 'string', format: 'uuid' },
-              name: { type: 'string' },
-              description: { type: 'string', nullable: true },
-              slug: { type: 'string' },
-              status: { type: 'string', enum: ['ACTIVE', 'INACTIVE'] },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' },
-              trashed: { type: 'boolean' },
-              trashedAt: { type: 'string', format: 'date-time', nullable: true },
+              message: {
+                type: 'string',
+                enum: ['Produto deletado com sucesso'],
+              },
             },
           },
           400: {
@@ -59,12 +55,12 @@ export default class CategoryShowController {
             },
           },
           404: {
-            description: 'Categoria não encontrada',
+            description: 'Produto não encontrado',
             type: 'object',
             properties: {
               message: { type: 'string' },
               code: { type: 'number', enum: [404] },
-              cause: { type: 'string', enum: ['CATEGORY_NOT_FOUND'] },
+              cause: { type: 'string', enum: ['PRODUCT_NOT_FOUND'] },
             },
           },
           500: {
@@ -81,7 +77,7 @@ export default class CategoryShowController {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const payload = CategoryShowParamSchema.parse(request.params);
+    const payload = ProductDeleteParamSchema.parse(request.params);
     const result = await this.useCase.execute(payload);
 
     if (result.isLeft()) {
@@ -94,6 +90,8 @@ export default class CategoryShowController {
       });
     }
 
-    return response.status(200).send(result.value);
+    return response.status(200).send({
+      message: 'Produto deletado com sucesso',
+    });
   }
 }
